@@ -1,0 +1,51 @@
+import cookieParser from "cookie-parser";
+import express, {
+  type Application,
+  type Request,
+  type Response,
+} from "express";
+import { apiRoute } from "./Routes";
+import { staticDir } from "./Utils/path.util";
+
+import { errorMiddleware } from "./Middleware/error.middleware";
+import { prisma } from "./Library/prisma";
+
+export function createApp(): Application {
+  const app = express();
+
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser(process.env.COOKIE_SECRET));
+  app.use(express.static(staticDir));
+
+  app.use("/api", apiRoute);
+  app.use("/api", (_req: Request, res: Response): void => {
+    res.status(404).json({
+      success: false,
+      error: "API route not found",
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.use(errorMiddleware);
+
+  // Background Cleanup & SQLite Optimization Task
+  setInterval(async () => {
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
+      await prisma.login.deleteMany({
+        where: { createdAt: { lt: sevenDaysAgo } }
+      });
+      
+      await prisma.$executeRawUnsafe(`PRAGMA optimize;`);
+      await prisma.$executeRawUnsafe(`VACUUM;`);
+      
+      console.log("🧹 Cleanup task: Removed expired sessions & optimized SQLite database");
+    } catch (err) {
+      console.error("Cleanup task failed:", err);
+    }
+  }, 1000 * 60 * 60); // Run every 1 hour
+
+  return app;
+}

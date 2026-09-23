@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  Student
+  Admin
+}
+
+enum AssignmentType {
+  Solo
+  Group
+  Major
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  studentId String @unique
+  name      String
+  role      Role   @default(Student)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  assignmentChecklists AssignmentChecklist[]
+  publicNotes          PublicNote[]
+  privateNotes         PrivateNote[]
+  login                Login?
+
+  @@unique([createdAt, id])
+}
+
+model Login {
+  id Int @id @default(autoincrement())
+
+  cookie String @unique @default(uuid(4))
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([createdAt, id])
+}
+
+model Class {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  assignments Assignment[]
+  assignmentChecklists AssignmentChecklist[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([createdAt, id])
+}
+
+model AssignmentChecklist {
+  id           Int @id @default(autoincrement())
+  assignmentId Int
+  classId      Int
+  userId       Int
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class      Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([createdAt, id])
+  @@unique([classId, assignmentId, userId])
+}
+
+model Assignment {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String
+  deadline     DateTime?
+  assignedDate DateTime
+  type         AssignmentType
+  groupSize    Int            @default(0)
+
+  classId Int
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  publicNotes          PublicNote[]
+  privateNotes         PrivateNote[]
+  assignmentChecklists AssignmentChecklist[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([createdAt, id])
+}
+
+model PublicNote {
+  id           Int    @id @default(autoincrement())
+  assignmentId Int
+  userId       Int
+  title        String
+  content      String
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([createdAt, id])
+  @@index([assignmentId])
+  @@index([userId])
+}
+
+model PrivateNote {
+  id           Int @id @default(autoincrement())
+  assignmentId Int
+  userId       Int
+
+  content Json
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([assignmentId, userId])
+  @@unique([createdAt, id])
+}
