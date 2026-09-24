@@ -14,7 +14,7 @@ async function main() {
   console.log("Adding users...");
   const admin = await prisma.user.create({
     data: {
-      studentId: "admin_001",
+      studentId: "1000",
       name: "Admin User",
       role: "Admin",
     },
@@ -50,12 +50,24 @@ async function main() {
     },
   });
 
+  console.log("Adding 30 mock classes for pagination...");
+  const mockClasses = [];
+  for (let i = 1; i <= 30; i++) {
+    mockClasses.push({
+      name: `Mock Class ${i} (Pagination Test)`,
+    });
+  }
+  await prisma.class.createMany({
+    data: mockClasses,
+  });
+
   console.log("Adding assignments...");
   const assignment1 = await prisma.assignment.create({
     data: {
       id: 1,
       name: "Safety Audit Report",
-      description: "Perform a safety audit on a local workplace and write a comprehensive report.",
+      description:
+        "Perform a safety audit on a local workplace and write a comprehensive report.",
       assignedDate: new Date(),
       deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       type: "Solo",
@@ -67,7 +79,8 @@ async function main() {
   const assignment2 = await prisma.assignment.create({
     data: {
       name: "Hazard Analysis Presentation",
-      description: "Group presentation on identifying and mitigating workplace hazards.",
+      description:
+        "Group presentation on identifying and mitigating workplace hazards.",
       assignedDate: new Date(),
       deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
       type: "Group",
@@ -79,7 +92,8 @@ async function main() {
   const assignment3 = await prisma.assignment.create({
     data: {
       name: "Health Regulations Essay",
-      description: "Write an essay detailing the evolution of occupational health regulations over the last decade.",
+      description:
+        "Write an essay detailing the evolution of occupational health regulations over the last decade.",
       assignedDate: new Date(),
       deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
       type: "Major",
@@ -106,7 +120,7 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    // Optionally update caches if you have server running, 
+    // Optionally update caches if you have server running,
     // but in a script it's standalone, so just exit.
     process.exit(0);
   });

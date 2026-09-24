@@ -25,4 +25,5 @@ export * from "./auth.service";
 export * from "./class.service";
 export * from "./private_note.service";
 export * from "./public_note.service";
+export * from "./user.service";
 

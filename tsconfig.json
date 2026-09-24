@@ -8,5 +8,7 @@
     "ignoreDeprecations": "5.0",
     "types": ["node"],
     "outDir": "./build"
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["front-end", "node_modules", "build"]
 }

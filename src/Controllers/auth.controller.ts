@@ -1,20 +1,11 @@
 import { Request, Response } from "express";
 import { AuthService } from "../Services/auth.service";
+import { USER_SCHEMA } from "../Types/user.type";
 import { asyncHandler } from "../Utils/async_handler.util";
 
-import z from "zod";
-
-const AUTH_SCHEMA = {
-  login: z.object({
-    studentId: z.string().min(1, "Student ID is required"),
-  }),
-};
-
 export class AuthController {
-  static COOKIE_KEY = "OHS-TOKEN";
-
   static login = asyncHandler(async (req: Request, res: Response) => {
-    const parseResult = AUTH_SCHEMA.login.safeParse(req.body);
+    const parseResult = USER_SCHEMA.login.safeParse(req.body);
     if (!parseResult.success) {
       return res.status(400).json({
         success: false,
@@ -26,8 +17,11 @@ export class AuthController {
 
     const data = parseResult.data;
 
-    const { cookie, user } = await AuthService.login(data.studentId);
-    if (!cookie || !user) {
+    const { token, refreshToken, user } = await AuthService.login(
+      data.studentId,
+    );
+
+    if (!token || !refreshToken || !user) {
       return res.status(401).json({
         success: false,
         error: "User might not existed",
@@ -35,36 +29,59 @@ export class AuthController {
       });
     }
 
-    res.cookie(AuthController.COOKIE_KEY, cookie, {
-      signed: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60 * 60,
-      httpOnly: true,
-    });
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: {
-        name: user.name,
-        assignmentCount: 0,
-        createdAt: user.createdAt.toISOString(),
+        accessToken: token,
+        refreshToken,
+        user: {
+          id: user.id,
+          studentId: user.studentId,
+          name: user.name,
+          role: user.role,
+        },
       },
       timestamp: new Date().toISOString(),
     });
   });
 
-  static logout = asyncHandler(async (req: Request, res: Response) => {
-    const cookie = req.signedCookies[AuthController.COOKIE_KEY];
-    if (!cookie) {
-      return res.redirect("/");
+  static refreshToken = asyncHandler(async (req: Request, res: Response) => {
+    const parseResult = USER_SCHEMA.refreshToken.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid body",
+        details: parseResult.error.issues,
+        timestamp: new Date().toISOString(),
+      });
     }
 
-    res.clearCookie(AuthController.COOKIE_KEY);
-    AuthService.logout(cookie);
+    const data = parseResult.data;
 
-    res.status(201).json({
+    const { token, refreshToken, user } = await AuthService.refreshToken(
+      data.refreshToken,
+    );
+
+    if (!token || !refreshToken || !user) {
+      return res.status(401).json({
+        success: false,
+        error: "User might not existed or refresh token might be invalid",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    res.status(200).json({
       success: true,
+      data: {
+        accessToken: token,
+        refreshToken,
+        user: {
+          id: user.id,
+          studentId: user.studentId,
+          name: user.name,
+          role: user.role,
+        },
+      },
       timestamp: new Date().toISOString(),
     });
   });

@@ -4,7 +4,6 @@ import { adminMiddleware } from "../Middleware/admin.middleware";
 import { userMiddleware } from "../Middleware/user.middleware";
 
 export const classRoute = Router();
-classRoute.use(userMiddleware);
 
 classRoute.get("/", ClassController.get);
 classRoute.post("/", adminMiddleware, ClassController.create);

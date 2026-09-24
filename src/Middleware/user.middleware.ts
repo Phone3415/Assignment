@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { User } from "../../generated/prisma/client";
-import { AuthController } from "../Controllers/auth.controller";
 import { prisma } from "../Library/prisma";
+import { AuthService } from "../Services";
+import { USER_SCHEMA } from "../Types/user.type";
 
 declare global {
   namespace Express {
@@ -17,32 +19,46 @@ export const userMiddleware = async (
   next: NextFunction,
 ) => {
   try {
-    const cookie = req.signedCookies[AuthController.COOKIE_KEY];
-
-    if (!cookie) {
-      return res.status(401).json({
+    const isApi = req.originalUrl.startsWith("/api");
+    const api401Response = () =>
+      res.status(401).json({
         success: false,
         error: "Unauthorized",
         timestamp: new Date().toISOString(),
       });
+
+    const redirectOrResponse = () => {
+      if (isApi) return api401Response();
+      return res.redirect("/login");
+    };
+
+    const authentication = USER_SCHEMA.authentication.safeParse(req.headers);
+    if (!authentication.success) {
+      return redirectOrResponse();
     }
 
-    const login = await prisma.login.findUnique({
-      where: { cookie },
-      include: { user: true },
+    const { authorization } = authentication.data;
+    const token = authorization.slice(7);
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, AuthService.jwtSecret);
+    } catch {
+      return redirectOrResponse();
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
     });
 
-    if (!login || !login.user) {
-      return res.status(401).json({
-        success: false,
-        error: "Unauthorized",
-        timestamp: new Date().toISOString(),
-      });
+    if (!user) {
+      return redirectOrResponse();
     }
 
-    req.user = login.user;
+    req.user = user;
     next();
   } catch (error) {
+    console.error("User middleware error:", error);
     res.status(500).json({
       success: false,
       error: "Internal Server Error",

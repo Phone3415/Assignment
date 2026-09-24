@@ -3,19 +3,25 @@ import { Class } from "../../generated/prisma/client";
 import { prisma } from "../Library/prisma";
 
 export class ClassService {
-  static async getAll(cursor?: string, size?: number, search?: string): Promise<Class[]> {
+  static async getAll(cursor?: string, size?: number, search?: string) {
     const take = size ?? 10;
+    const where = search ? { name: { contains: search } } : undefined;
     
-    return prisma.class.findMany({
-      take,
-      skip: cursor ? 1 : 0,
-      where: search ? { name: { contains: search } } : undefined,
-      ...(cursor ? { cursor: parseCursor(cursor) } : {}),
-      orderBy: [
-        { createdAt: "asc" },
-        { id: "asc" }
-      ]
-    });
+    const [items, total] = await prisma.$transaction([
+      prisma.class.findMany({
+        take,
+        skip: cursor ? 1 : 0,
+        where,
+        ...(cursor ? { cursor: parseCursor(cursor) } : {}),
+        orderBy: [
+          { createdAt: "asc" },
+          { id: "asc" }
+        ]
+      }),
+      prisma.class.count({ where })
+    ]);
+
+    return { items, total };
   }
 
   static async create(name: string) {

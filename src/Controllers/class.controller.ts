@@ -26,11 +26,13 @@ const CLASS_SCHEMA = {
 export class ClassController {
   static get = asyncHandler(async (req: Request, res: Response) => {
     const data = CLASS_SCHEMA.get.parse(req.query);
-    const items = await ClassService.getAll(data.cursor, data.size, data.search);
+    const result = await ClassService.getAll(data.cursor, data.size, data.search);
 
     res.json({
       success: true,
-      data: items,
+      data: result.items,
+      total: result.total,
+      totalPages: Math.ceil(result.total / data.size),
       timestamp: new Date().toISOString(),
     });
   });
