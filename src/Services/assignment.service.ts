@@ -1,7 +1,9 @@
 import { parseCursor } from ".";
 import { Assignment, AssignmentType } from "../../generated/prisma/browser";
+import { AssignmentWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../Library/prisma";
 import { AssignmentStatus } from "../Types/assignment.type";
+import { THREE_DAYS_MS } from "../Utils";
 
 export class AssignmentService {
   static async get(
@@ -30,13 +32,58 @@ export class AssignmentService {
       groupSize?: number;
       type?: string;
       status?: AssignmentStatus;
+      search?: string;
     },
     userId: number,
   ): Promise<Assignment[]> {
+    const statusToQuery = (status: AssignmentStatus) => {
+      const now = new Date();
+      const threeDaysFromNow = new Date(now.getTime() + THREE_DAYS_MS);
+
+      const queries: Record<AssignmentStatus, AssignmentWhereInput> = {
+        [AssignmentStatus.Urgent]: {
+          deadline: {
+            gt: now,
+            lte: threeDaysFromNow,
+          },
+        },
+        [AssignmentStatus.Overdue]: {
+          deadline: {
+            lte: now,
+          },
+        },
+        [AssignmentStatus.Submitted]: {
+          assignmentChecklists: {
+            some: {
+              userId,
+            },
+          },
+        },
+        [AssignmentStatus.Unchecked]: {
+          assignmentChecklists: {
+            none: {
+              userId,
+            },
+          },
+        },
+      };
+
+      return queries[status];
+    };
+
     return prisma.assignment.findMany({
       where: {
         classId,
         ...(filters.groupSize ? { groupSize: filters.groupSize } : {}),
+        ...(filters.status ? statusToQuery(filters.status) : {}),
+        ...(filters.search 
+             ? { 
+                 OR: [
+                   { name: { contains: filters.search } },
+                   { description: { contains: filters.search } }
+                 ]
+               } 
+             : {}),
       },
       ...(filters.cursor ? { cursor: parseCursor(filters.cursor) } : {}),
       take: filters.size ?? 10,

@@ -26,6 +26,14 @@ const ASSIGNMENT_SCHEMA = {
   classIdParam: z.object({
     classId: z.coerce.number().int().positive(),
   }),
+  getAllQuery: z.object({
+    cursor: z.string().optional(),
+    size: z.coerce.number().int().positive().optional().default(10),
+    groupSize: z.coerce.number().int().positive().optional(),
+    type: z.enum(ASSIGNMENT_TYPES).optional(),
+    status: z.enum(ASSIGNMENT_STATUSES).optional(),
+    search: z.string().optional(),
+  }),
   compositeParam: z.object({
     id: z.coerce.number().int().positive(),
     classId: z.coerce.number().int().positive(),
@@ -42,14 +50,6 @@ const ASSIGNMENT_SCHEMA = {
       error: "Invalid assignment type",
     }),
     groupSize: z.int().positive().optional(),
-  }),
-
-  getAllQuery: z.object({
-    cursor: z.string().optional(),
-    size: z.coerce.number().int().positive().optional().default(10),
-    groupSize: z.coerce.number().int().positive().optional(),
-    type: z.enum(ASSIGNMENT_TYPES).optional(),
-    status: z.enum(ASSIGNMENT_STATUSES).optional(),
   }),
   updateBody: z.object({
     name: z

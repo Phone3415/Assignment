@@ -3,12 +3,13 @@ import { Class } from "../../generated/prisma/client";
 import { prisma } from "../Library/prisma";
 
 export class ClassService {
-  static async getAll(cursor?: string, size?: number): Promise<Class[]> {
+  static async getAll(cursor?: string, size?: number, search?: string): Promise<Class[]> {
     const take = size ?? 10;
     
     return prisma.class.findMany({
       take,
       skip: cursor ? 1 : 0,
+      where: search ? { name: { contains: search } } : undefined,
       ...(cursor ? { cursor: parseCursor(cursor) } : {}),
       orderBy: [
         { createdAt: "asc" },

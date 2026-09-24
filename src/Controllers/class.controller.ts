@@ -10,6 +10,7 @@ const CLASS_SCHEMA = {
   get: z.object({
     cursor: z.string().optional(),
     size: z.coerce.number().int().positive().optional().default(10),
+    search: z.string().optional(),
   }),
   updateBody: z.object({
     name: z.string().min(1, "Class name is required"),
@@ -25,7 +26,7 @@ const CLASS_SCHEMA = {
 export class ClassController {
   static get = asyncHandler(async (req: Request, res: Response) => {
     const data = CLASS_SCHEMA.get.parse(req.query);
-    const items = await ClassService.getAll(data.cursor, data.size);
+    const items = await ClassService.getAll(data.cursor, data.size, data.search);
 
     res.json({
       success: true,

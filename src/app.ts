@@ -7,8 +7,9 @@ import express, {
 import { apiRoute } from "./Routes";
 import { staticDir } from "./Utils/path.util";
 
-import { errorMiddleware } from "./Middleware/error.middleware";
 import { prisma } from "./Library/prisma";
+import { errorMiddleware } from "./Middleware/error.middleware";
+import { ONE_HOUR_MS, SEVEN_DAYS_MS } from "./Utils";
 
 export function createApp(): Application {
   const app = express();
@@ -29,23 +30,24 @@ export function createApp(): Application {
 
   app.use(errorMiddleware);
 
-  // Background Cleanup & SQLite Optimization Task
   setInterval(async () => {
     try {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      
+      const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
+
       await prisma.login.deleteMany({
-        where: { createdAt: { lt: sevenDaysAgo } }
+        where: { createdAt: { lt: sevenDaysAgo } },
       });
-      
+
       await prisma.$executeRawUnsafe(`PRAGMA optimize;`);
       await prisma.$executeRawUnsafe(`VACUUM;`);
-      
-      console.log("🧹 Cleanup task: Removed expired sessions & optimized SQLite database");
+
+      console.log(
+        "Cleanup task: Removed expired sessions & optimized SQLite database",
+      );
     } catch (err) {
       console.error("Cleanup task failed:", err);
     }
-  }, 1000 * 60 * 60); // Run every 1 hour
+  }, ONE_HOUR_MS);
 
   return app;
 }
