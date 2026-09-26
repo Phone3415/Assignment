@@ -1,18 +1,11 @@
 import { useCallback, useRef, useState } from "react";
+import {
+  CacheData,
+  ClassData,
+  ClassListResponse,
+  UseClassesReturn,
+} from "../Types";
 import useApiFetch from "./Api.hook";
-import { CacheData, ClassData, ClassListResponse } from "../Types";
-
-export interface UseClassesReturn {
-  isLoading: boolean;
-  error: string | null;
-  classes: ClassData[];
-  currentPage: number;
-  totalPages: number;
-  getAllClasses: (page?: number, search?: string) => Promise<ClassData[]>;
-  createClass: (name: string) => Promise<{ success: boolean; error?: string }>;
-  clearCache: () => void;
-  clearError: () => void;
-}
 
 export function useClasses(): UseClassesReturn {
   const apiFetch = useApiFetch();
@@ -24,7 +17,9 @@ export function useClasses(): UseClassesReturn {
 
   const cache = useRef<Record<string, CacheData>>({});
   // Maps a search string to a map of page numbers to their cursors
-  const cursorsMap = useRef<Record<string, Record<number, string | undefined>>>({});
+  const cursorsMap = useRef<Record<string, Record<number, string | undefined>>>(
+    {},
+  );
 
   const getAllClasses = useCallback(
     async (page: number = 1, search: string = ""): Promise<ClassData[]> => {
@@ -58,7 +53,9 @@ export function useClasses(): UseClassesReturn {
       try {
         const response = await apiFetch(`/api/classes?${cacheKey}`);
         if (!response.ok) {
-          throw new Error("ไม่สามารถโหลดข้อมูลวิชาเรียนได้ กรุณาลองใหม่อีกครั้ง");
+          throw new Error(
+            "ไม่สามารถโหลดข้อมูลวิชาเรียนได้ กรุณาลองใหม่อีกครั้ง",
+          );
         }
 
         const json: ClassListResponse = await response.json();
@@ -67,7 +64,8 @@ export function useClasses(): UseClassesReturn {
 
         if (data.length > 0) {
           const lastClass = data[data.length - 1];
-          cursorsMap.current[normalizedSearch][page + 1] = `${lastClass.id}__$__${lastClass.createdAt}`;
+          cursorsMap.current[normalizedSearch][page + 1] =
+            `${lastClass.id}__$__${lastClass.createdAt}`;
         }
 
         const cachedData: CacheData = {
@@ -116,7 +114,10 @@ export function useClasses(): UseClassesReturn {
 
         if (!response.ok) {
           const json = await response.json();
-          return { success: false, error: json.error || "ไม่สามารถสร้างรายวิชาได้" };
+          return {
+            success: false,
+            error: json.error || "ไม่สามารถสร้างรายวิชาได้",
+          };
         }
 
         return { success: true };
@@ -124,9 +125,66 @@ export function useClasses(): UseClassesReturn {
         return {
           success: false,
           error:
-            err instanceof Error
-              ? err.message
-              : "เกิดข้อผิดพลาดในการเชื่อมต่อ",
+            err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ",
+        };
+      }
+    },
+    [apiFetch],
+  );
+
+  const editClass = useCallback(
+    async (
+      id: number,
+      name: string,
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const response = await apiFetch(`/api/classes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) {
+          const json = await response.json();
+          return {
+            success: false,
+            error: json.error || "ไม่สามารถแก้ไขรายวิชาได้",
+          };
+        }
+
+        return { success: true };
+      } catch (err: unknown) {
+        return {
+          success: false,
+          error:
+            err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ",
+        };
+      }
+    },
+    [apiFetch],
+  );
+
+  const deleteClass = useCallback(
+    async (id: number): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const response = await apiFetch(`/api/classes/${id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          const json = await response.json();
+          return {
+            success: false,
+            error: json.error || "ไม่สามารถลบรายวิชาได้",
+          };
+        }
+
+        return { success: true };
+      } catch (err: unknown) {
+        return {
+          success: false,
+          error:
+            err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ",
         };
       }
     },
@@ -139,6 +197,8 @@ export function useClasses(): UseClassesReturn {
     classes,
     getAllClasses,
     createClass,
+    editClass,
+    deleteClass,
     currentPage,
     totalPages,
     clearCache,

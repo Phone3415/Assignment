@@ -4,12 +4,14 @@ interface GlobalModalProps {
   isOpen: boolean;
   content: ReactNode | null;
   onClose: () => void;
+  maxWidth?: string;
 }
 
 export default function GlobalModal({
   isOpen,
   content,
   onClose,
+  maxWidth = "max-w-md",
 }: GlobalModalProps) {
   return (
     <div
@@ -29,7 +31,7 @@ export default function GlobalModal({
 
       {/* Modal Card */}
       <div
-        className={`relative w-full max-w-md p-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-zinc-800 transition-all duration-300 transform ${
+        className={`relative w-full ${maxWidth} p-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-zinc-800 transition-all duration-300 transform ${
           isOpen
             ? "opacity-100 scale-100 translate-y-0"
             : "opacity-0 scale-95 translate-y-4"

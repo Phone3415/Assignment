@@ -7,7 +7,7 @@ import { asyncHandler } from "../Utils/async_handler.util";
 export class UserController {
   static getAll = asyncHandler(async (req: Request, res: Response) => {
     const data = USER_SCHEMA.get.parse(req.query);
-    const users = await UserService.getAll(
+    const result = await UserService.getAll(
       data.cursor,
       data.size,
       data.search,
@@ -16,7 +16,9 @@ export class UserController {
 
     res.json({
       success: true,
-      data: users,
+      data: result.items,
+      total: result.total,
+      totalPages: Math.ceil(result.total / data.size),
       timestamp: new Date().toISOString(),
     });
   });
@@ -28,7 +30,7 @@ export class UserController {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "User not found",
+        error: "ไม่พบผู้ใช้งาน",
         timestamp: new Date().toISOString(),
       });
     }
@@ -47,7 +49,7 @@ export class UserController {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        error: "User with this Student ID already exists",
+        error: "มีผู้ใช้งานที่ใช้รหัสนักศึกษานี้อยู่แล้ว",
         timestamp: new Date().toISOString(),
       });
     }
@@ -73,7 +75,7 @@ export class UserController {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "User not found",
+        error: "ไม่พบผู้ใช้งาน",
         timestamp: new Date().toISOString(),
       });
     }
@@ -83,7 +85,7 @@ export class UserController {
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          error: "User with this Student ID already exists",
+          error: "มีผู้ใช้งานที่ใช้รหัสนักศึกษานี้อยู่แล้ว",
           timestamp: new Date().toISOString(),
         });
       }
@@ -109,7 +111,7 @@ export class UserController {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "User not found",
+        error: "ไม่พบผู้ใช้งาน",
         timestamp: new Date().toISOString(),
       });
     }

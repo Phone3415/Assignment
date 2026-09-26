@@ -8,28 +8,47 @@ export class UserService {
     size?: number,
     search?: string,
     role?: Role,
-  ): Promise<User[]> {
+  ): Promise<{ items: User[]; total: number }> {
     const take = size ?? 10;
 
-    return prisma.user.findMany({
-      take,
-      skip: cursor ? 1 : 0,
-      where: {
-        AND: [
-          search
-            ? {
-                OR: [
-                  { name: { contains: search } },
-                  { studentId: { contains: search } },
-                ],
-              }
-            : {},
-          role ? { role } : {},
-        ],
-      },
-      ...(cursor ? { cursor: parseCursor(cursor) } : {}),
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    });
+    const [items, total] = await prisma.$transaction([
+      prisma.user.findMany({
+        take,
+        skip: cursor ? 1 : 0,
+        where: {
+          AND: [
+            search
+              ? {
+                  OR: [
+                    { name: { contains: search } },
+                    { studentId: { contains: search } },
+                  ],
+                }
+              : {},
+            role ? { role } : {},
+          ],
+        },
+        ...(cursor ? { cursor: parseCursor(cursor) } : {}),
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      }),
+      prisma.user.count({
+        where: {
+          AND: [
+            search
+              ? {
+                  OR: [
+                    { name: { contains: search } },
+                    { studentId: { contains: search } },
+                  ],
+                }
+              : {},
+            role ? { role } : {},
+          ],
+        },
+      }),
+    ]);
+
+    return { items, total };
   }
 
   static async getById(id: number): Promise<User | null> {

@@ -1,18 +1,17 @@
 import { createContext, JSX, ReactNode, useContext, useState } from "react";
-import { JWTData, User } from "../Types";
+import { JWTData } from "../Types";
 
 export type { JWTData } from "../Types";
 
 interface JWTContextType {
   accessToken: string | null;
   refreshToken: string | null;
-  user: User | null;
+  user: JWTData | null;
   logout: () => void;
   set: (accessToken: string, refreshToken: string, user: JWTData) => void;
 }
 
 const JWTContext = createContext<JWTContextType | undefined>(undefined);
-
 
 export function JWTProvider({
   children,
@@ -25,16 +24,15 @@ export function JWTProvider({
   const [refreshToken, setRefreshToken] = useState<string | null>(
     localStorage.getItem("refreshToken"),
   );
-  const [user, setUser] = useState<User | null>(() => {
+  const [user, setUser] = useState<JWTData | null>(() => {
     try {
       const stored = localStorage.getItem("user");
       if (!stored || stored === "undefined") return null;
-      return JSON.parse(stored) as User;
+      return JSON.parse(stored) as JWTData;
     } catch {
       return null;
     }
   });
-
 
   const logout = () => {
     localStorage.removeItem("accessToken");

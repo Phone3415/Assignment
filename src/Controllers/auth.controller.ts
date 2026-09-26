@@ -9,7 +9,7 @@ export class AuthController {
     if (!parseResult.success) {
       return res.status(400).json({
         success: false,
-        error: "Invalid body",
+        error: "ข้อมูลที่ส่งมาไม่ถูกต้อง",
         details: parseResult.error.issues,
         timestamp: new Date().toISOString(),
       });
@@ -24,7 +24,7 @@ export class AuthController {
     if (!token || !refreshToken || !user) {
       return res.status(401).json({
         success: false,
-        error: "User might not existed",
+        error: "ไม่พบรหัสนักศึกษานี้ในระบบ",
         timestamp: new Date().toISOString(),
       });
     }
@@ -50,7 +50,7 @@ export class AuthController {
     if (!parseResult.success) {
       return res.status(400).json({
         success: false,
-        error: "Invalid body",
+        error: "ข้อมูลที่ส่งมาไม่ถูกต้อง",
         details: parseResult.error.issues,
         timestamp: new Date().toISOString(),
       });
@@ -65,7 +65,7 @@ export class AuthController {
     if (!token || !refreshToken || !user) {
       return res.status(401).json({
         success: false,
-        error: "User might not existed or refresh token might be invalid",
+        error: "ไม่พบผู้ใช้งานหรือเซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่",
         timestamp: new Date().toISOString(),
       });
     }

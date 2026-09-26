@@ -10,7 +10,7 @@ import {
 import GlobalModal from "../Components/GlobalModal.component";
 
 interface ModalContextType {
-  showModal: (content: ReactNode) => void;
+  showModal: (content: ReactNode, options?: { maxWidth?: string }) => void;
   hideModal: () => void;
 }
 
@@ -23,14 +23,16 @@ export function ModalProvider({
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<ReactNode | null>(null);
+  const [modalOptions, setModalOptions] = useState<{ maxWidth?: string }>({});
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
-  const showModal = (modalContent: ReactNode) => {
+  const showModal = (modalContent: ReactNode, options?: { maxWidth?: string }) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setContent(modalContent);
+    setModalOptions(options || {});
     setIsOpen(true);
   };
 
@@ -52,7 +54,7 @@ export function ModalProvider({
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       {children}
-      <GlobalModal isOpen={isOpen} content={content} onClose={hideModal} />
+      <GlobalModal isOpen={isOpen} content={content} onClose={hideModal} maxWidth={modalOptions.maxWidth} />
     </ModalContext.Provider>
   );
 }

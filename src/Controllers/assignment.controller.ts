@@ -47,7 +47,7 @@ const ASSIGNMENT_SCHEMA = {
     assignedDate: z.coerce.date(),
     deadline: z.coerce.date().optional(),
     type: z.enum(ASSIGNMENT_TYPES, {
-      error: "Invalid assignment type",
+      error: "ประเภทของงานไม่ถูกต้อง",
     }),
     groupSize: z.int().positive().optional(),
   }),
@@ -64,7 +64,7 @@ const ASSIGNMENT_SCHEMA = {
     deadline: z.coerce.date().optional(),
     type: z
       .enum(ASSIGNMENT_TYPES, {
-        error: "Invalid assignment type",
+        error: "ประเภทของงานไม่ถูกต้อง",
       })
       .optional(),
     groupSize: z.int().positive().optional(),

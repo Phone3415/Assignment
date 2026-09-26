@@ -1,10 +1,11 @@
 import { JSX } from "react";
+import { Link } from "react-router-dom";
 import { useModal } from "../../Contexts/Modal.context";
-import { User } from "../../Types";
+import { JWTData } from "../../Types";
 import CreateClassModal from "./CreateModal.component";
 
 interface HeaderProps {
-  user: User;
+  user: JWTData;
   search: string;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
@@ -54,7 +55,7 @@ export default function Header({
             placeholder="ค้นหารายวิชา..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full min-w-0 bg-transparent border-none focus:outline-none font-[Sarabun] text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500"
+            className="w-full min-w-0 bg-transparent border-none focus:outline-none font-[Sarabun] text-base text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500"
           />
           {search && (
             <button
@@ -84,16 +85,26 @@ export default function Header({
               <span className="lg:block md:hidden">เพิ่มวิชา</span>
             </button>
           )}
+          {user.role === "Admin" && (
+            <Link
+              to="/students"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95 font-[Sarabun]"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                manage_accounts
+              </span>
+              <span className="lg:block md:hidden">จัดการนักศึกษา</span>
+            </Link>
+          )}
           <button
             type="button"
             onClick={onLogout}
-            className="ml-auto lg:ml-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all font-[Prompt]"
+            className="ml-auto lg:ml-0 p-2 text-slate-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all font-[Prompt] flex items-center justify-center"
             title="ออกจากระบบ"
           >
-            <span className="material-symbols-outlined text-[18px]">
+            <span className="material-symbols-outlined text-[20px]">
               logout
             </span>
-            <span className="md:hidden">ออกจากระบบ</span>
           </button>
         </div>
       </div>

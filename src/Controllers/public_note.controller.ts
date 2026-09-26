@@ -34,7 +34,7 @@ export class PublicNoteController {
     if (!item) {
       return res.status(404).json({
         success: false,
-        error: "Public note not found",
+        error: "ไม่พบโน้ตสาธารณะ",
         timestamp: new Date().toISOString(),
       });
     }

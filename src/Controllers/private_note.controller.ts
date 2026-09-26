@@ -12,7 +12,7 @@ export class PrivateNoteController {
     if (!item) {
       return res.status(404).json({
         success: false,
-        error: "Private note not found",
+        error: "ไม่พบโน้ตส่วนตัว",
         timestamp: new Date().toISOString(),
       });
     }

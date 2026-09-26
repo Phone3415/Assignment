@@ -15,8 +15,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "types": [],
-    "jsx": "react-jsx"
-
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@excalidraw/excalidraw": ["node_modules/@excalidraw/excalidraw/dist/types/excalidraw/index.d.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "build", "dist"]

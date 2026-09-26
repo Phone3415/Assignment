@@ -26,8 +26,14 @@ export default function useLoginForm(): LoginFormHook {
       jwt.set(data.accessToken, data.refreshToken, data.user);
       return { success: true };
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+      let errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+      if (error instanceof Error) {
+        if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
+          errorMessage = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้";
+        } else {
+          errorMessage = error.message;
+        }
+      }
       return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);

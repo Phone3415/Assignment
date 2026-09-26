@@ -11,11 +11,6 @@ export default function NotFoundPage(): JSX.Element {
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <main className="relative z-10 max-w-lg w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 p-8 sm:p-12 rounded-3xl shadow-xl flex flex-col items-center text-center">
-        {/* Badge / Code */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-wide uppercase mb-6 font-[Prompt]">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
-          ข้อผิดพลาด 404
-        </div>
 
         <h1 className="text-7xl sm:text-8xl font-black tracking-tight text-slate-800 dark:text-zinc-100 font-[Prompt] mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 bg-clip-text text-transparent">
           404

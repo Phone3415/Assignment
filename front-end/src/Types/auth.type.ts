@@ -5,6 +5,7 @@ export interface User {
   studentId: string;
   name: string;
   role: UserRole;
+  createdAt: string;
 }
 
 export interface JWTData {
