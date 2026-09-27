@@ -7,6 +7,7 @@ import LoginPage from "./Routes/Login.route";
 import NotFoundPage from "./Routes/NotFound.route";
 import StudentPage from "./Routes/Student.route";
 import PrivateNoteRoute from "./Routes/PrivateNote.route";
+import PublicNoteRoute from "./Routes/PublicNote.route";
 
 function App(): JSX.Element {
   return (
@@ -18,6 +19,7 @@ function App(): JSX.Element {
         <Route path="/students" element={<StudentPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/assignments/:id/private-note" element={<PrivateNoteRoute />} />
+        <Route path="/assignments/:id/public-notes" element={<PublicNoteRoute />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>

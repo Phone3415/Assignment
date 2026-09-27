@@ -155,7 +155,7 @@ export default function AssignmentTable({
     if (type === "private") {
       navigate(`/assignments/${assignment.id}/private-note`);
     } else {
-      showModal(<NotesModal assignmentName={assignment.name} type={type} />);
+      navigate(`/assignments/${assignment.id}/public-notes`);
     }
   };
 
