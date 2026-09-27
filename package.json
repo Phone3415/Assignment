@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "node build.mjs",
+    "db:deploy": "prisma generate && prisma migrate deploy",
     "start": "node build/index.js",
     "seed": "tsx prisma/seed.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
