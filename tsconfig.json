@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2023",
+    "target": "esnext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "build",
+    "rootDir": "src",
+    "allowSyntheticDefaultImports": true,
     "strict": true,
-    "esModuleInterop": true,
-    "ignoreDeprecations": "5.0",
-    "types": ["node"],
-    "outDir": "./build"
+    "ignoreDeprecations": "6.0",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true
   },
   "include": ["src/**/*"],
   "exclude": ["front-end", "node_modules", "build"]
