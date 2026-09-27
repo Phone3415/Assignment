@@ -4,7 +4,7 @@
     "module": "Preserve",
     "moduleResolution": "Bundler",
 
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "build",
 
     "strict": true,
@@ -16,6 +16,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "generated/**/*", "build.mjs", "prisma7.config.ts"],
   "exclude": ["node_modules", "build", "front-end"]
 }
