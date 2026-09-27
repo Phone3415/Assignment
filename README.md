@@ -48,7 +48,7 @@ A full-stack assignment management system built for the Occupational Health and 
 - Dark/light theme support.
 - REST-style API separated from the React frontend.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Area | Technology |
 |---|---|
@@ -64,7 +64,7 @@ A full-stack assignment management system built for the Occupational Health and 
 | Whiteboard | Excalidraw |
 | Utilities | `lodash.debounce` |
 
-## 🏗️ Architecture
+## Architecture
 
 The project uses a simple client/server structure:
 
@@ -93,7 +93,7 @@ The project uses a simple client/server structure:
 
 The backend handles authentication, validation, business logic, and database access. The React frontend handles the UI, routing, client-side state, and API communication.
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ├── generated/
@@ -263,7 +263,7 @@ The Prisma schema is located at:
 prisma/schema.prisma
 ```
 
-## 🔌 API Overview
+## API Overview
 
 All protected endpoints use:
 
