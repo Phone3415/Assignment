@@ -1,406 +1,393 @@
-# Occupational Health and Safety — Assignment Management System
+# Occupational Health and Safety Assignment Management System
 
-A full-stack enterprise coursework and assignment management platform designed for the Occupational Health and Safety department. It integrates an **Express 5 (TypeScript)** backend powered by **Prisma ORM 7** and **SQLite**, paired with a **React 19** frontend featuring an **Excalidraw whiteboard**, public discussion feed, and a design system with dark/light mode.
+A full-stack assignment management system built for the Occupational Health and Safety department.
 
----
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-## Table of Contents
+> A coursework project that brings assignments, submission tracking, private notes, public discussions, and administration into one application.
 
-- [Overview & Key Features](#-overview--key-features)
-- [Architecture & Tech Stack](#-architecture--tech-stack)
-- [Database Schema & Models](#-database-schema--models)
-- [API Reference](#-api-reference)
-- [Frontend Architecture & UI Guidelines](#-frontend-architecture--ui-guidelines)
-- [Project Directory Structure](#-project-directory-structure)
-- [Getting Started & Installation](#-getting-started--installation)
-- [Default Seed Credentials](#-default-seed-credentials)
+## Features
 
----
+### Student
 
-## Overview & Key Features
+- Browse classes and assignments.
+- View assignment deadlines, types, and group requirements.
+- Track assignment status:
+  - `Unchecked`
+  - `Urgent`
+  - `Overdue`
+  - `Submitted`
+- Submit and unsubmit assignments.
+- Keep a personal checklist for each assignment.
+- Use a private **Excalidraw** whiteboard for notes, sketches, and planning.
+- Discuss assignments through a public feed.
+- Automatically save whiteboard changes locally and sync them with the server in the background.
 
-### Student Capabilities
+### Admin
 
-- **Class & Assignment Tracking**: Browse enrolled classes, view assignments, deadlines, group requirements, and assignment categories.
-- **Dynamic Status & Due Date Tracking**: Real-time assignment state detection (`ยังไม่ส่ง / Unchecked`, `ด่วน / Urgent` within 3 days, `เกินกำหนด / Overdue`, and `ส่งแล้ว / Submitted`).
-- **Interactive Checklists**: Check and uncheck assignment completion with instant persistence.
-- **Interactive Excalidraw Whiteboard (Private Notes)**: Dedicated per-assignment canvas powered by `@excalidraw/excalidraw` for sketching, mind mapping, and note-taking.
-  - Immediate local caching via `localStorage`.
-  - Background auto-save with a 1500ms debounce to the Express server with visual status indicators (`saving`, `saved`, `error`).
-- **Public Discussion Feed (Public Notes)**: Twitter-like real-time discussion feed per assignment.
-  - Infinite scroll loading via `IntersectionObserver`.
-  - Authors can compose, edit, and delete their own notes.
+- Manage classes with full CRUD operations.
+- Create and manage assignments.
+- Configure deadlines, assignment types, and group sizes.
+- Manage students and administrators.
+- Search and edit users.
+- Moderate public assignment discussions.
+- Access protected admin routes through role-based access control.
 
-### Admin Capabilities
+### Authentication & API
 
-- **Role-Based Access Control (RBAC)**: Protected administrative routes with `adminMiddleware`.
-- **Class Management**: Full CRUD operations to create, edit, rename, and delete classes.
-- **Assignment Management**: Create, update, and delete coursework with configurable deadlines, assignment types (`Solo`, `Group`, `Major`), and required group sizes.
-- **Student & User Management**: Admin panel to register, edit, search, and delete students and administrators.
-- **Moderation**: Ability to delete inappropriate public notes posted across any assignment feed.
+- JWT authentication with short-lived access tokens and refresh tokens.
+- Server-side refresh-token verification.
+- Automatic token refresh when the frontend receives `401 Unauthorized`.
+- Zod validation for incoming requests.
+- Cursor-based pagination for large result sets.
+- Dark/light theme support.
+- REST-style API separated from the React frontend.
 
-### System & Security Capabilities
+## 🛠️ Tech Stack
 
-- **Dual-Token Authentication (JWT)**:
-  - Short-lived Access Token (30 minutes) + Long-lived Refresh Token (1 day).
-  - Database-backed refresh token verification in SQLite `Login` table.
-- **Silent Token Refresh**: The frontend `useApiFetch` hook transparently catches `401 Unauthorized` responses, exchanges the refresh token, updates state, and replays the original request without user interruption.
-- **High-Performance Pagination**: Cursor-based pagination using composite cursors (`${id}__$__${createdAt.toISOString()}`) indexed against composite keys (`@@unique([createdAt, id])`).
-- **Strict Validation**: All incoming requests are validated through **Zod** schemas before reaching controllers.
-- **Adaptive Dark/Light Mode**: Synced across all UI elements and the Excalidraw canvas.
+| Area | Technology |
+|---|---|
+| Backend | Node.js, TypeScript, Express 5 |
+| Database | SQLite |
+| ORM | Prisma ORM 7 |
+| Validation | Zod |
+| Authentication | JWT |
+| Frontend | React 19 |
+| Routing | React Router 7 |
+| Styling | Tailwind CSS |
+| Build Tool | CRACO |
+| Whiteboard | Excalidraw |
+| Utilities | `lodash.debounce` |
 
----
+## 🏗️ Architecture
 
-## Architecture & Tech Stack
+The project uses a simple client/server structure:
 
 ```text
 ┌────────────────────────────────────────────────────────┐
-│                   React 19 Frontend                    │
-│   (React Router 7, Tailwind CSS, Excalidraw, Context)  │
+│                    React 19 Frontend                   │
+│     React Router 7 · Tailwind CSS · Excalidraw        │
 └──────────────────────────┬─────────────────────────────┘
-                           │ HTTP / JSON (Proxy /api)
+                           │
+                      HTTP / JSON
+                           │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│                   Express 5 Backend                    │
-│      (Zod Validation, JWT Auth, Admin Middleware)      │
+│                    Express 5 Backend                   │
+│        Zod Validation · JWT · Admin Middleware        │
 └──────────────────────────┬─────────────────────────────┘
-                           │ Better-SQLite3 Driver
+                           │
+                    better-sqlite3
+                           │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│                   Prisma ORM 7 Engine                  │
-│               (dev.db SQLite Database)                 │
+│                    Prisma ORM 7                       │
+│                    SQLite Database                    │
 └────────────────────────────────────────────────────────┘
 ```
 
-### Backend Stack
+The backend handles authentication, validation, business logic, and database access. The React frontend handles the UI, routing, client-side state, and API communication.
 
-- **Runtime & Language**: Node.js, TypeScript, executed via `tsx watch`
-- **Framework**: Express 5 (`^5.2.1`)
-- **Database ORM**: Prisma ORM 7 (`^7.10.0`) with `@prisma/adapter-better-sqlite3`
-- **Validation**: Zod (`^4.6.5`)
-- **Security & Session**: `jsonwebtoken` (`^9.0.3`), `cookie-parser` (`^1.4.7`)
-
-### Frontend Stack
-
-- **Framework**: React 19 (`^19.3.0`)
-- **Routing**: React Router DOM (`^7.18.4`)
-- **Styling**: Tailwind CSS (`^3.4.19`), PostCSS, Autoprefixer
-- **Build Tooling**: CRACO (`@craco/craco` `^7.1.0`)
-- **Whiteboard Engine**: Excalidraw (`@excalidraw/excalidraw` `^0.18.1`)
-- **Utilities**: `lodash.debounce` (`^4.0.8`)
-
----
-
-## Database Schema & Models
-
-The SQLite database is managed via Prisma with the schema located at [prisma/schema.prisma](file:///c:/Users/Phone3415/Documents/Occupational%20Health%20and%20Safety/Assignment/prisma/schema.prisma).
-
-### Entity Relationship Diagram
-
-```mermaid
-erDiagram
-    USER ||--o| LOGIN : "has"
-    USER ||--o{ ASSIGNMENT_CHECKLIST : "tracks"
-    USER ||--o{ PUBLIC_NOTE : "authors"
-    USER ||--o{ PRIVATE_NOTE : "draws"
-
-    CLASS ||--o{ ASSIGNMENT : "contains"
-    CLASS ||--o{ ASSIGNMENT_CHECKLIST : "references"
-
-    ASSIGNMENT ||--o{ ASSIGNMENT_CHECKLIST : "completed_in"
-    ASSIGNMENT ||--o{ PUBLIC_NOTE : "discusses"
-    ASSIGNMENT ||--o{ PRIVATE_NOTE : "notes"
-
-    USER {
-        int id PK
-        string studentId UK
-        string name
-        enum role "Student | Admin"
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    LOGIN {
-        int id PK
-        string jwtHash UK
-        int userId FK,UK
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    CLASS {
-        int id PK
-        string name
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    ASSIGNMENT {
-        int id PK
-        string name
-        string description
-        datetime assignedDate
-        datetime deadline
-        enum type "Solo | Group | Major"
-        int groupSize
-        int classId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    ASSIGNMENT_CHECKLIST {
-        int id PK
-        int assignmentId FK
-        int classId FK
-        int userId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    PUBLIC_NOTE {
-        int id PK
-        int assignmentId FK
-        int userId FK
-        string title
-        string content
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    PRIVATE_NOTE {
-        int id PK
-        int assignmentId FK
-        int userId FK
-        json content
-        datetime createdAt
-        datetime updatedAt
-    }
-```
-
-### Model Summary
-
-1. **User**: Represents learners and lecturers/administrators. Enforces unique student ID and contains composite index `[createdAt, id]` for fast cursor pagination.
-2. **Login**: Stores active refresh tokens (`jwtHash`) linked 1:1 with user records.
-3. **Class**: Subject/course registry.
-4. **Assignment**: Coursework tasks linked to a `Class`. Contains `Solo`, `Group`, or `Major` tags and deadline constraints.
-5. **AssignmentChecklist**: Many-to-many junction representing personal assignment submission checklist states (`[classId, assignmentId, userId]`).
-6. **PublicNote**: Public message board posts per assignment. Indexed by `assignmentId` and `userId`.
-7. **PrivateNote**: Stores per-user, per-assignment drawing board canvas JSON (`content Json`) with unique constraint `[assignmentId, userId]`.
-
----
-
-## API Reference
-
-All protected endpoints require an `Authorization: Bearer <accessToken>` header. Administrative endpoints additionally require the authenticated user's role to be `Admin`.
-
-### 1. Authentication (`/api/auth`)
-
-| Method | Endpoint                  | Auth   | Description                                                                                         |
-| ------ | ------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
-| `POST` | `/api/auth/login`         | Public | Authenticate with `{ studentId: string }`. Returns `accessToken`, `refreshToken`, and user profile. |
-| `POST` | `/api/auth/refresh-token` | Public | Refresh expired session with `{ refreshToken: string }`. Returns rotated tokens.                    |
-
-### 2. Classes (`/api/classes`)
-
-| Method          | Endpoint           | Auth      | Description                                                            |
-| --------------- | ------------------ | --------- | ---------------------------------------------------------------------- |
-| `GET`           | `/api/classes`     | User      | Get paginated classes. Query: `cursor`, `size` (default 10), `search`. |
-| `POST`          | `/api/classes`     | **Admin** | Create class with `{ name: string }`.                                  |
-| `PATCH` / `PUT` | `/api/classes/:id` | **Admin** | Update class name with `{ name: string }`.                             |
-| `DELETE`        | `/api/classes/:id` | **Admin** | Delete a class and cascading assignments.                              |
-
-### 3. Assignments (`/api/assignments`)
-
-| Method   | Endpoint                                 | Auth      | Description                                                                                                                                                        |
-| -------- | ---------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET`    | `/api/assignments/:classId`              | User      | List assignments by class. Query: `cursor`, `size`, `groupSize`, `type` (`Solo`/`Group`/`Major`), `status` (`Submitted`/`Unchecked`/`Overdue`/`Urgent`), `search`. |
-| `GET`    | `/api/assignments/:classId/:id`          | User      | Get single assignment details including user checklist status.                                                                                                     |
-| `POST`   | `/api/assignments/:classId`              | **Admin** | Create assignment `{ name, description, assignedDate, deadline?, type, groupSize? }`.                                                                              |
-| `PATCH`  | `/api/assignments/:id`                   | **Admin** | Update assignment fields.                                                                                                                                          |
-| `DELETE` | `/api/assignments/:id`                   | **Admin** | Delete assignment.                                                                                                                                                 |
-| `PUT`    | `/api/assignments/:classId/:id/submit`   | User      | Mark assignment as submitted for the current user.                                                                                                                 |
-| `PUT`    | `/api/assignments/:classId/:id/unsubmit` | User      | Unmark assignment submission for the current user.                                                                                                                 |
-
-### 4. Public Notes Feed (`/api/assignments/:assignmentId/public-notes` & `/api/public-notes`)
-
-| Method   | Endpoint                                      | Auth | Description                                                                      |
-| -------- | --------------------------------------------- | ---- | -------------------------------------------------------------------------------- |
-| `GET`    | `/api/assignments/:assignmentId/public-notes` | User | Fetch paginated feed. Query: `cursor`, `size`. Returns `items` and `nextCursor`. |
-| `POST`   | `/api/assignments/:assignmentId/public-notes` | User | Create note `{ title: string, content: string }`.                                |
-| `GET`    | `/api/public-notes/:id`                       | User | Fetch note by ID.                                                                |
-| `PUT`    | `/api/public-notes/:id`                       | User | Update note `{ title?, content? }`. (Author only).                               |
-| `DELETE` | `/api/public-notes/:id`                       | User | Delete note. Allowed by note author or any **Admin**.                            |
-
-### 5. Private Whiteboard Notes (`/api/assignments/:assignmentId/private-note`)
-
-| Method | Endpoint                                      | Auth | Description                                                               |
-| ------ | --------------------------------------------- | ---- | ------------------------------------------------------------------------- |
-| `GET`  | `/api/assignments/:assignmentId/private-note` | User | Fetch current user's Excalidraw whiteboard JSON data for this assignment. |
-| `PUT`  | `/api/assignments/:assignmentId/private-note` | User | Save/upsert whiteboard data `{ content: object }`.                        |
-
-### 6. Users & Students (`/api/users`) — _Admin Only_
-
-| Method          | Endpoint         | Auth      | Description                                                                         |
-| --------------- | ---------------- | --------- | ----------------------------------------------------------------------------------- |
-| `GET`           | `/api/users`     | **Admin** | Paginated user list. Query: `cursor`, `size`, `search`, `role` (`Student`/`Admin`). |
-| `GET`           | `/api/users/:id` | **Admin** | Get user by ID.                                                                     |
-| `POST`          | `/api/users`     | **Admin** | Register user `{ studentId, name, role? }`.                                         |
-| `PATCH` / `PUT` | `/api/users/:id` | **Admin** | Update user profile `{ studentId?, name?, role? }`.                                 |
-| `DELETE`        | `/api/users/:id` | **Admin** | Remove user and invalidate sessions.                                                |
-
----
-
-## Frontend Architecture & UI Guidelines
-
-The frontend strictly adheres to modern UX and clean code principles:
-
-### 1. Typography & Colors
-
-- **Header & Button Font**: `Prompt` (Google Font)
-- **Body & Description Font**: `Sarabun` (Google Font)
-- **Icons**: Google Material Symbols Outlined (`material-symbols-outlined`)
-- **Theme Support**: Seamless Dark/Light mode using Tailwind `dark:` variant and document root mutation observation.
-
-### 2. Interaction Design
-
-- **No Browser Dialogs**: Native `window.alert()` and `confirm()` are strictly forbidden. All actions use the unified `ModalFormLayout` via `ModalContext`.
-- **Destructive Action Safety**: Dangerous actions (deletions) trigger confirmation modals with `danger` variant button styles and descriptive warnings.
-- **Action Icons**: Table row action buttons are compact, icon-only with clear hover tooltips and `active:scale-95` animations.
-- **State Feedback**: Comprehensive UI states:
-  - Skeleton screens during data loading.
-  - Informative empty states with actionable reset triggers.
-  - Non-blocking error boundaries and retry triggers.
-
-### 3. Excalidraw Whiteboard Integration
-
-- Located at `/assignments/:id/private-note`.
-- Synchronizes Excalidraw theme with application dark/light mode dynamically.
-- Dual-tier persistence: Instant `localStorage` synchronization prevents accidental data loss; debounced background HTTP synchronization saves data to SQLite without stutter.
-
----
-
-## Project Directory Structure
+## 📂 Project Structure
 
 ```text
 ├── generated/
-│   └── prisma/                  # Generated Prisma ORM client & types
+│   └── prisma/                  # Generated Prisma client and types
+│
 ├── prisma/
-│   ├── migrations/              # Database schema migrations history
-│   ├── dev.db                   # SQLite database file
-│   ├── schema.prisma            # Prisma schema definition
-│   └── seed.ts                  # Database seeder script
-├── src/                         # Express Backend Source
-│   ├── app.ts                   # Express application setup & middleware
-│   ├── index.ts                 # Server entrypoint (Port 3000)
-│   ├── Controllers/             # Request handling & Zod parsing
-│   │   ├── assignment.controller.ts
-│   │   ├── auth.controller.ts
-│   │   ├── class.controller.ts
-│   │   ├── private_note.controller.ts
-│   │   ├── public_note.controller.ts
-│   │   └── user.controller.ts
-│   ├── Library/                 # Prisma client instance configuration
-│   ├── Middleware/              # Express authentication & error middleware
-│   ├── Routes/                  # Router definitions
-│   ├── Services/                # Database query operations & business logic
-│   ├── Types/                   # Backend TypeScript interfaces & schemas
-│   └── Utils/                   # Async handler, binary search, path utilities
-├── front-end/                   # React Frontend Source
-│   ├── craco.config.js          # CRACO build configuration
-│   ├── tailwind.config.js       # Tailwind CSS theme configuration
-│   ├── public/                  # Static assets & HTML template
+│   ├── migrations/              # Database migration history
+│   ├── dev.db                   # SQLite database
+│   ├── schema.prisma            # Prisma schema
+│   └── seed.ts                  # Database seed script
+│
+├── src/                         # Express backend
+│   ├── app.ts                   # Express app and middleware setup
+│   ├── index.ts                 # Server entry point
+│   ├── Controllers/             # Request handling and validation
+│   ├── Library/                 # Prisma client configuration
+│   ├── Middleware/              # Authentication and error middleware
+│   ├── Routes/                  # Express route definitions
+│   ├── Services/                # Business logic and database operations
+│   ├── Types/                   # TypeScript types and schemas
+│   └── Utils/                   # Shared utilities
+│
+├── front-end/                   # React frontend
+│   ├── public/
 │   └── src/
-│       ├── Api/                 # API transport layer & refresh logic
-│       ├── Components/          # UI components
-│       │   ├── assignment/      # Modals, tables, indicators for assignments
-│       │   ├── class/           # Modals, header, card tiles for classes
-│       │   ├── common/          # EmptyState, ErrorState, ModalForm, Skeletons
-│       │   ├── login/           # Authentication forms
-│       │   └── student/         # Admin user management components
-│       ├── Contexts/            # JWTContext, ModalContext, ThemeContext
-│       ├── Hooks/               # Custom data fetching hooks (useAssignments, etc.)
-│       ├── Routes/              # Application pages (React Router)
-│       ├── Styles/              # Global CSS & Tailwind imports
-│       └── Types/               # Frontend TypeScript interfaces
-├── package.json                 # Backend dependencies & scripts
-├── tsconfig.json                # TypeScript compiler configuration
-└── README.md                    # Project documentation
+│       ├── Api/                 # API transport and token refresh
+│       ├── Components/          # Reusable UI components
+│       ├── Contexts/            # JWT, modal, and theme contexts
+│       ├── Hooks/               # Data-fetching hooks
+│       ├── Routes/              # React Router pages
+│       ├── Styles/              # Global styles
+│       └── Types/               # Frontend types
+│
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
----
+## Getting Started
 
-## Getting Started & Installation
+### Requirements
 
-### Prerequisites
-
-- Node.js (v18.0.0 or higher recommended)
+- Node.js 18+
 - npm or yarn
 
-### 1. Backend Setup
-
-In the project root directory:
+### 1. Clone the repository
 
 ```bash
-# 1. Install backend dependencies
-npm install
+git clone https://github.com/Phone3415/Assignment.git
+cd Assignment
+```
 
-# 2. Generate Prisma Client
+### 2. Install backend dependencies
+
+```bash
+npm install
+```
+
+### 3. Set up Prisma
+
+```bash
 npx prisma generate
-
-# 3. Apply database migrations
 npx prisma migrate dev
-
-# 4. Seed the database with initial users and classes
-npm run seed
-
-# 5. Start the backend development server
-npm run dev
 ```
 
-The backend API starts on **http://localhost:3000**.
-
-### 2. Frontend Setup
-
-In a new terminal window:
+### 4. Seed the database
 
 ```bash
-# 1. Navigate to the frontend directory
-cd front-end
+npm run seed
+```
 
-# 2. Install frontend dependencies
-npm install
+### 5. Start the backend
 
-# 3. Start the React development server
+```bash
 npm run dev
 ```
 
-The frontend application starts on **http://localhost:3001** and automatically proxies `/api` calls to port 3000.
+The API will be available at:
+
+```text
+http://localhost:3000
+```
+
+### 6. Start the frontend
+
+Open another terminal:
+
+```bash
+cd front-end
+npm install
+npm run dev
+```
+
+The frontend will be available at:
+
+```text
+http://localhost:3001
+```
+
+The development server proxies `/api` requests to the backend.
+
+## Seed Accounts
+
+After running `npm run seed`, you can sign in from `/login` using one of these accounts:
+
+| Student ID | Name | Role |
+|---|---|---|
+| `1000` | Admin User | Admin |
+| `1001` | John Doe | Student |
+| `1002` | Jane Smith | Student |
+
+### Access
+
+**Admin**
+
+- User management
+- Class management
+- Assignment management
+- Public note moderation
+
+**Student**
+
+- Classes
+- Assignments
+- Submission tracking
+- Private whiteboards
+- Public discussions
+
+> These are development seed accounts. Do not use them as real credentials in a production deployment.
+
+## Database
+
+The application uses SQLite through Prisma.
+
+The main entities are:
+
+```text
+User
+ ├── Login
+ ├── AssignmentChecklist
+ ├── PublicNote
+ └── PrivateNote
+
+Class
+ ├── Assignment
+ └── AssignmentChecklist
+
+Assignment
+ ├── AssignmentChecklist
+ ├── PublicNote
+ └── PrivateNote
+```
+
+### Models
+
+- **User** — Students and administrators.
+- **Login** — Active refresh-token records linked to users.
+- **Class** — Courses or subjects.
+- **Assignment** — Coursework belonging to a class.
+- **AssignmentChecklist** — Per-user assignment submission state.
+- **PublicNote** — Public discussion posts.
+- **PrivateNote** — Per-user Excalidraw board data.
+
+The Prisma schema is located at:
+
+```text
+prisma/schema.prisma
+```
+
+## 🔌 API Overview
+
+All protected endpoints use:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+### Authentication
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/login` | Log in with a student ID. |
+| `POST` | `/api/auth/refresh-token` | Refresh an expired access token. |
+
+### Classes
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/classes` | List classes with pagination/search. |
+| `POST` | `/api/classes` | Create a class. |
+| `PATCH` / `PUT` | `/api/classes/:id` | Update a class. |
+| `DELETE` | `/api/classes/:id` | Delete a class. |
+
+### Assignments
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/assignments/:classId` | List assignments for a class. |
+| `GET` | `/api/assignments/:classId/:id` | Get assignment details. |
+| `POST` | `/api/assignments/:classId` | Create an assignment. |
+| `PATCH` | `/api/assignments/:id` | Update an assignment. |
+| `DELETE` | `/api/assignments/:id` | Delete an assignment. |
+| `PUT` | `/api/assignments/:classId/:id/submit` | Mark an assignment as submitted. |
+| `PUT` | `/api/assignments/:classId/:id/unsubmit` | Remove the submitted state. |
+
+### Public Notes
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/assignments/:assignmentId/public-notes` | Get the discussion feed. |
+| `POST` | `/api/assignments/:assignmentId/public-notes` | Create a discussion post. |
+| `GET` | `/api/public-notes/:id` | Get a post. |
+| `PUT` | `/api/public-notes/:id` | Edit a post. |
+| `DELETE` | `/api/public-notes/:id` | Delete a post. |
+
+### Private Whiteboard
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/assignments/:assignmentId/private-note` | Load the current user's whiteboard. |
+| `PUT` | `/api/assignments/:assignmentId/private-note` | Save the whiteboard. |
+
+### Users
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/users` | List users. |
+| `GET` | `/api/users/:id` | Get a user. |
+| `POST` | `/api/users` | Register a user. |
+| `PATCH` / `PUT` | `/api/users/:id` | Update a user. |
+| `DELETE` | `/api/users/:id` | Delete a user. |
+
+All `/api/users` endpoints require the `Admin` role.
+
+## Frontend Notes
+
+The UI uses:
+
+- **Prompt** for headings and buttons.
+- **Sarabun** for body text and descriptions.
+- Google Material Symbols for icons.
+- Tailwind's `dark:` variant for theme support.
+
+The application avoids native browser dialogs such as `alert()` and `confirm()`. Instead, confirmations and forms use the shared modal system.
+
+Common UI states include:
+
+- Loading skeletons.
+- Empty states.
+- Error states with retry actions.
+- Confirmation dialogs for destructive actions.
+
+### Excalidraw
+
+Private assignment notes are available at:
+
+```text
+/assignments/:id/private-note
+```
+
+The whiteboard uses the same light/dark theme as the rest of the application.
+
+Changes are saved locally first and then synchronized with the backend using a debounced request. This keeps drawing interactions responsive without sending a request for every individual change.
+
+## NPM Scripts
+
+### Root
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the backend in watch mode. |
+| `npm run build` | Compile the TypeScript backend. |
+| `npm run start` | Start the production backend. |
+| `npm run seed` | Seed the database. |
+
+### Frontend
+
+Run these from `front-end/`:
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the React development server. |
+| `npm run build` | Build the production frontend. |
+| `npm test` | Run the Jest test suite. |
+
+## Project Status
+
+This project is a coursework/full-stack application for the Occupational Health and Safety department. The README documents the current implementation, architecture, API surface, and development setup.
+
 
 ---
 
-## Default Seed Credentials
 
-After running `npm run seed`, you can sign in at `/login` using any of the following Student IDs:
 
-| Student ID | Name       | Role        | Access Level                                                                            |
-| ---------- | ---------- | ----------- | --------------------------------------------------------------------------------------- |
-| `1000`     | Admin User | **Admin**   | Full access to user management, class management, assignment CRUD, and note moderation. |
-| `1001`     | John Doe   | **Student** | Access to classes, assignments, checklist toggle, whiteboard notes, and public feed.    |
-| `1002`     | Jane Smith | **Student** | Access to classes, assignments, checklist toggle, whiteboard notes, and public feed.    |
-
----
-
-## Available NPM Scripts
-
-### Root Project (`/`)
-
-- `npm run dev`: Start backend in watch mode using `tsx`.
-- `npm run build`: Compile TypeScript code into JavaScript using `tsc`.
-- `npm run start`: Run production backend server.
-- `npm run seed`: Run database seeder ([prisma/seed.ts](file:///c:/Users/Phone3415/Documents/Occupational%20Health%20and%20Safety/Assignment/prisma/seed.ts)).
-
-### Frontend (`/front-end`)
-
-- `npm run dev`: Start React development server with hot-reload (`craco start`).
-- `npm run build`: Compile production-ready static assets to `front-end/build` (`craco build`).
-- `npm test`: Run Jest tests (`craco test`).
+<p align="center">
+  Built with TypeScript, React, Express, Prisma, and SQLite.
+</p>
