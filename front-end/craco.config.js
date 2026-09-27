@@ -1,7 +1,6 @@
 module.exports = {
   webpack: {
     configure: (webpackConfig) => {
-      // 1. Fix Excalidraw / fullySpecified module resolution for .mjs / .js
       webpackConfig.module.rules.forEach((rule) => {
         (rule.oneOf || []).forEach((oneOf) => {
           if (oneOf.type === "javascript/auto") {
@@ -17,7 +16,6 @@ module.exports = {
         },
       });
 
-      // 2. Remove source-map-loader to fix ENOENT sourcemap errors in node_modules
       webpackConfig.module.rules = webpackConfig.module.rules.filter(
         (rule) =>
           !(
@@ -30,10 +28,7 @@ module.exports = {
           ),
       );
 
-      // 3. Ignore strict export presence for excalidraw chunk bugs
       webpackConfig.module.strictExportPresence = false;
-
-      // Also ignore warnings from Webpack
       webpackConfig.ignoreWarnings = [/Failed to parse source map/];
 
       return webpackConfig;
