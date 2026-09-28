@@ -103,7 +103,7 @@ export default function ThemeToggle(): JSX.Element {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
+      className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -111,7 +111,7 @@ export default function ThemeToggle(): JSX.Element {
       <div
         className={`bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] p-1.5 transition-all duration-300 origin-bottom-right ${
           isExpanded
-            ? "scale-100 opacity-100 translate-y-0"
+            ? "scale-100 opacity-100 translate-y-0 pointer-events-auto"
             : "scale-90 opacity-0 pointer-events-none translate-y-2"
         }`}
       >
@@ -151,7 +151,7 @@ export default function ThemeToggle(): JSX.Element {
       {/* Main Toggle Button */}
       <button
         onClick={toggleExpand}
-        className="flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+        className="pointer-events-auto flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
         aria-label="เปลี่ยนธีม"
         title="เปลี่ยนธีม"
       >
