@@ -44,5 +44,11 @@
       "prisma>@prisma/engines#7.10.0": true,
       "prisma>better-sqlite3#12.11.1": true
     }
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "prisma": true,
+    "@prisma/engines": true,
+    "better-sqlite3": true
   }
 }
